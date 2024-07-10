@@ -1,0 +1,28 @@
+{
+  "resources": [
+    {
+      "name": "backfill_raw_papers_role",
+      "resource_type": "iam_role",
+      "role_arn": "arn:aws:iam::058264275251:role/paper-pipeline-dev-backfill_raw_papers",
+      "role_name": "paper-pipeline-dev-backfill_raw_papers"
+    },
+    {
+      "name": "backfill_raw_papers",
+      "resource_type": "lambda_function",
+      "lambda_arn": "arn:aws:lambda:ap-northeast-2:058264275251:function:paper-pipeline-dev-backfill_raw_papers"
+    },
+    {
+      "name": "feed_papers_by_quarter_role",
+      "resource_type": "iam_role",
+      "role_arn": "arn:aws:iam::058264275251:role/paper-pipeline-dev-feed_papers_by_quarter",
+      "role_name": "paper-pipeline-dev-feed_papers_by_quarter"
+    },
+    {
+      "name": "feed_papers_by_quarter",
+      "resource_type": "lambda_function",
+      "lambda_arn": "arn:aws:lambda:ap-northeast-2:058264275251:function:paper-pipeline-dev-feed_papers_by_quarter"
+    }
+  ],
+  "schema_version": "2.0",
+  "backend": "api"
+}
