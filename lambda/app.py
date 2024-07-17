@@ -78,10 +78,5 @@ def feed_papers_by_quarter(event, context):
     current_quarter = (current_month - 1) // 3 + 1
     quarter: int = event.get("quarter", current_quarter)
 
-    try:
-        export_arxiv_papers_by_quarter(category, year, quarter)
-        return {"message": "Done!"}
-    except Exception as e:
-        return {
-            "message": f"Error processing {category}, {year}, Quarter: {quarter}: {str(e)}"
-        }
+    export_arxiv_papers_by_quarter(category, year, quarter)
+    return {"message": "Done!"}

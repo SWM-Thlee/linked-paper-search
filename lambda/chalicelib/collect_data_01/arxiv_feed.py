@@ -11,6 +11,7 @@ from ..config.logger_config import logger
 base_url = "http://export.arxiv.org/oai2?"
 target_bucket = "paper-feed"
 s3_client = boto3.client("s3")
+max_retries = 10
 
 
 def export_arxiv_papers_by_quarter(category: str, year=None | int, quarter=None | int):
@@ -40,7 +41,7 @@ def export_arxiv_papers_by_quarter(category: str, year=None | int, quarter=None 
 
     retry_count = 0
     page = 1
-    while retry_count < 5:
+    while retry_count < max_retries:
         try:
             response = urllib.request.urlopen(url)
             if response.getcode() != 200:
@@ -72,7 +73,10 @@ def export_arxiv_papers_by_quarter(category: str, year=None | int, quarter=None 
             logger.error(f"An error occurred: {e}")
             logger.info("Retrying...")
             retry_count += 1
-            time.sleep(5)
+            if retry_count >= max_retries:
+                logger.error("Maximum retry limit reached, failing the function.")
+                raise Exception("Maximum retry limit reached, function failed.")
+            time.sleep(10)
 
 
 if __name__ == "__main__":
