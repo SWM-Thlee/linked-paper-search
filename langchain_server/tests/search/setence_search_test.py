@@ -11,7 +11,6 @@ class MyTestCase(unittest.TestCase):
         embedding_service = SentenceEmbeddingService()
 
         db = MemoryVectorDB()
-        db.clear()  # 이전 데이터 초기화
 
         dataset = {
             1: "Securing Confidential Data For Distributed Software Development Teams: Encrypted Container File",
@@ -34,8 +33,7 @@ class MyTestCase(unittest.TestCase):
         query_text = "Securing Confidential"
 
         result = self.search_service.search_similar(query_text, SearchMethod.COSINE)
-        # 예상 결과가 'cat'이라고 가정
-        print(result)
+        # 예상 결과가 dataset[1]이라고 가정
         self.assertEqual(result[0]["metadata"], 1)
 
     def test_euclidean_similarity_search(self):
@@ -43,7 +41,7 @@ class MyTestCase(unittest.TestCase):
         query_text = "Securing Confidential"
 
         result = self.search_service.search_similar(query_text, SearchMethod.EUCLIDEAN)
-        # 예상 결과가 'cat'이라고 가정
+        # 예상 결과가 dataset[1]이라고 가정
         print(result)
         self.assertEqual(result[0]["metadata"], 1)
 

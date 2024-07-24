@@ -13,6 +13,14 @@ class VectorDB(ABC):
     def find_with_euclidean_similarity(self, vector, top_k=100):
         pass
 
+    @abstractmethod
+    def insert_item(self, vector, metadata=None):
+        pass
+
+    @abstractmethod
+    def clear(self):
+        pass
+
 
 @log_on_init("uvicorn.info")
 class MemoryVectorDB(VectorDB):
