@@ -1,12 +1,18 @@
 import calendar
 import datetime
+
+# logger 설정 필요시 사용
+import logging
+import sys
 import time
 import urllib.request
 from xml.etree import ElementTree as ET
 
 import boto3
+from awsglue.utils import getResolvedOptions
 
-from ..config.logger_config import logger
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 base_url = "http://export.arxiv.org/oai2?"
 target_bucket = "paper-feed"
@@ -14,15 +20,14 @@ s3_client = boto3.client("s3")
 max_retries = 10
 
 
-def export_arxiv_papers_by_quarter(category: str, year=None | int, quarter=None | int):
-    """Lambda 호출 시간을 고려하여 해당 년도의 분기 데이터를 수집하는 함수
-    주의: 데이터를 수집하는 데 5분 이상 소요될 수 있음.
-    OAI datastamp를 기준으로 년/분기 확인 (datastamp는 KST 12:00 am 기준으로 변경됨) => 데이터 수집 시 해당 시간 전에 완료해야 함.
+def export_arxiv_papers_by_quarter(category: str, year=None, quarter=None):
+    """
+    AWS Glue Job을 위한 함수로서, 주어진 년도와 분기의 논문 데이터를 수집하여 S3에 저장.
 
     Args:
-        category (str): 수집할 논문 카테고리 (cs, bio ...)
-        year (int, optional): 수집할 논문의 년도. Defaults to current year.
-        quarter (int, optional): 수집할 분기 (1 to 4). Defaults to current quarter.
+        category (str): 수집할 논문 카테고리 (cs, bio 등)
+        year (int, optional): 수집할 논문의 년도. 기본값은 현재 년도.
+        quarter (int, optional): 수집할 분기 (1 to 4). 기본값은 현재 분기.
     """
     now = datetime.datetime.now()
     if year is None:
@@ -79,5 +84,10 @@ def export_arxiv_papers_by_quarter(category: str, year=None | int, quarter=None 
             time.sleep(10)
 
 
-if __name__ == "__main__":
-    export_arxiv_papers_by_quarter("cs")
+# Glue Job 실행 시 인수 받기
+args = getResolvedOptions(sys.argv, ["category", "year", "quarter"])
+
+# 함수 실행
+export_arxiv_papers_by_quarter(
+    category=args["category"], year=int(args["year"]), quarter=int(args["quarter"])
+)
