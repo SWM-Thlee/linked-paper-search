@@ -2,6 +2,7 @@ import calendar
 import datetime
 
 # logger 설정 필요시 사용
+import json
 import logging
 import sys
 import time
@@ -20,28 +21,35 @@ s3_client = boto3.client("s3")
 max_retries = 10
 
 
-def export_arxiv_papers_by_quarter(category: str, year=None, quarter=None):
+# Use the current date for naming the S3 key
+current_date = datetime.datetime.now()
+current_year = current_date.year
+current_month = current_date.month
+current_day = current_date.day
+
+# Metadata for the dataset
+metadata = {
+    "LastUpdated": f"{current_year}-{current_month:02d}-{current_day:02d}",
+    "Category": "cs",
+}
+
+
+def export_arxiv_papers_by_start_date(category: str, start_date: str):
     """
-    AWS Glue Job을 위한 함수로서, 주어진 년도와 분기의 논문 데이터를 수집하여 S3에 저장.
+    AWS Glue Job을 위한 함수로서, 주어진 시작 날짜를 기준으로 논문 데이터를 수집하여 S3에 저장.
 
     Args:
         category (str): 수집할 논문 카테고리 (cs, bio 등)
-        year (int, optional): 수집할 논문의 년도. 기본값은 현재 년도.
-        quarter (int, optional): 수집할 분기 (1 to 4). 기본값은 현재 분기.
+        start_date (str): 수집할 논문의 시작 날짜 (YYYY-MM-DD 형식)
     """
-    now = datetime.datetime.now()
-    if year is None:
-        year = now.year
-    if quarter is None:
-        quarter = (now.month - 1) // 3 + 1
-
-    quarter_months = {1: (1, 3), 2: (4, 6), 3: (7, 9), 4: (10, 12)}
-    start_month, end_month = quarter_months[quarter]
-    start_day = 1
-    end_day = calendar.monthrange(year, end_month)[1]  # 해당 분기 마지막 달의 마지막 일
+    # 시작 날짜에서 년도 및 월을 추출
+    start_date_dt = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+    year = start_date_dt.year
+    month = start_date_dt.month
+    day = start_date_dt.day
 
     # OAI 요청 URL 구성
-    query_params = f"verb=ListRecords&set={category}&metadataPrefix=arXivRaw&from={year}-{start_month:02d}-{start_day:02d}&until={year}-{end_month:02d}-{end_day:02d}"
+    query_params = f"verb=ListRecords&set={category}&metadataPrefix=arXivRaw&from={year}-{month:02d}-{day:02d}"
     url = base_url + query_params
 
     retry_count = 0
@@ -58,9 +66,7 @@ def export_arxiv_papers_by_quarter(category: str, year=None, quarter=None):
             tree = ET.fromstring(data)
 
             # Save the fetched data to S3 bucket
-            s3_key = (
-                f"01-arxiv-raw/{category}/arXivRaw_{year}-Q{quarter}_{page:03d}.xml"
-            )
+            s3_key = f"01-arxiv-raw-v2/{category}/arXivRaw_{current_year}_{current_month:02d}_{current_day:02d}_{page:03d}.xml"
             s3_client.put_object(Body=data, Bucket=target_bucket, Key=s3_key)
             logger.info(f"Saved {s3_key} to S3 bucket.")
 
@@ -83,11 +89,17 @@ def export_arxiv_papers_by_quarter(category: str, year=None, quarter=None):
                 raise Exception("Maximum retry limit reached, function failed.")
             time.sleep(10)
 
+    metadata["LastUpdatedFile"] = s3_key
+    metadata_json = json.dumps(metadata, indent=4)
+    metadata_key = f"01-arxiv-raw-v2/{category}/metadata.json"
+
+    s3_client.put_object(Body=metadata_json, Bucket=target_bucket, Key=metadata_key)
+
 
 # Glue Job 실행 시 인수 받기
-args = getResolvedOptions(sys.argv, ["category", "year", "quarter"])
+args = getResolvedOptions(sys.argv, ["category", "start_date"])
 
 # 함수 실행
-export_arxiv_papers_by_quarter(
-    category=args["category"], year=int(args["year"]), quarter=int(args["quarter"])
+export_arxiv_papers_by_start_date(
+    category=args["category"], start_date=args["start_date"]
 )

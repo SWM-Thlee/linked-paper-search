@@ -5,16 +5,21 @@ from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_s3 as s3
 from constructs import Construct
 
+glue_bucket_name = "etl-glue-script"
+paper_feed_bucket_name = "paper-feed"
+
 
 class EtlStack(Stack):
 
-    def __init__(self, scope: Construct, id: str, **kwargs) -> None:
-        super().__init__(scope, id, **kwargs)
+    def init_layer_01(self):
+        """
+        Layer 01: Glue Job 생성
+        TODO 1: Glue, Lambda constructs 분리
+        TODO 2: region 지정 (default: northeast-2)
+        """
 
-        # 기존 S3 버킷을 참조
-        bucket_name = "etl-glue-script"
         glue_bucket = s3.Bucket.from_bucket_name(
-            self, "GlueScriptsBucket", bucket_name=bucket_name
+            self, "GlueScriptsBucket", bucket_name=glue_bucket_name
         )
 
         # Glue IAM 역할 생성
@@ -33,7 +38,7 @@ class EtlStack(Stack):
         glue_bucket.grant_read(glue_role)
 
         # paper-feed 버킷에 대한 쓰기 권한 부여
-        paper_feed_bucket_name = "paper-feed"
+
         paper_feed_bucket = s3.Bucket.from_bucket_name(
             self, "PaperFeedBucket", bucket_name=paper_feed_bucket_name
         )
@@ -73,6 +78,8 @@ class EtlStack(Stack):
             },
             timeout=Duration.minutes(5),
         )
+        # Lambda가 paper-feed 버킷을 읽을 수 있도록 권한 부여
+        paper_feed_bucket.grant_read(trigger_lambda.role)
 
         # Lambda가 Glue Job을 시작할 수 있도록 권한 부여
         glue_role.grant_pass_role(trigger_lambda)
@@ -83,12 +90,13 @@ class EtlStack(Stack):
         # Backfill Lambda 함수 생성
         backfill_lambda = _lambda.Function(
             self,
-            "BackfillLambda",
+            "Backfill01",
             runtime=_lambda.Runtime.PYTHON_3_9,
             handler="backfill.handler",
             code=_lambda.Code.from_asset("lambda"),
             environment={
                 "GLUE_JOB_NAME": glue_job.ref,
+                "METADATA_BUCKET": paper_feed_bucket_name,
             },
             timeout=Duration.minutes(15),
         )
@@ -97,3 +105,7 @@ class EtlStack(Stack):
         backfill_lambda.add_to_role_policy(
             iam.PolicyStatement(actions=["glue:StartJobRun"], resources=[glue_job_arn])
         )
+
+    def __init__(self, scope: Construct, id: str, **kwargs) -> None:
+        super().__init__(scope, id, **kwargs)
+        self.init_layer_01(self)
