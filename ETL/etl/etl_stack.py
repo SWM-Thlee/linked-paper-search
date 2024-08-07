@@ -59,7 +59,7 @@ class EtlStack(Stack):
                 "--TempDir": glue_bucket.s3_url_for_object("temporary/"),
                 "--job-language": "python",
             },
-            glue_version="2.0",
+            glue_version="4.0",
             max_retries=3,
         )
 
@@ -108,4 +108,4 @@ class EtlStack(Stack):
 
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
-        self.init_layer_01(self)
+        self.init_layer_01()
