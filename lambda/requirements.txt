@@ -1,3 +1,0 @@
-# lambda package 추가시 필요한 라이브러리만 추가
-# pip freeze 금지!
-boto3==1.16.25
