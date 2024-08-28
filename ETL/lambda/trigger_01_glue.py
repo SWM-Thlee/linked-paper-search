@@ -15,7 +15,9 @@ def handler(event, context):
     # Retrieve category from event or default
     category = event.get("category", "cs")
 
-    metadata_key = f"metadata/{category}/collection_metadata.json"  # Key for the metadata file in S3
+    metadata_key = (
+        f"01-arxiv-raw-v2/{category}/metadata.json"  # Key for the metadata file in S3
+    )
 
     # Fetch the last collection date from S3 metadata
     response = s3_client.get_object(Bucket=bucket_name, Key=metadata_key)
