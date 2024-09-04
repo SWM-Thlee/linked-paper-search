@@ -10,6 +10,7 @@ from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_opensearchservice as opensearch
 from aws_cdk import aws_s3 as s3
+from aws_cdk import aws_s3_notifications as s3n
 from aws_cdk import aws_secretsmanager as secretsmanager
 from constructs import Construct
 
@@ -66,10 +67,7 @@ class EtlStack(Stack):
 
         # paper-feed 버킷에 대한 쓰기 권한 부여
 
-        paper_feed_bucket = s3.Bucket.from_bucket_name(
-            self, "PaperFeedBucket", bucket_name=PAPER_FEED_BUCKET_NAME
-        )
-        paper_feed_bucket.grant_put(glue_role)  # 업로드 권한 부여
+        self.paper_feed_bucket.grant_put(glue_role)  # 업로드 권한 부여
 
         # Glue Job 생성
         glue_job = glue.CfnJob(
@@ -151,7 +149,7 @@ class EtlStack(Stack):
             timeout=Duration.minutes(5),
         )
         # Lambda가 paper-feed 버킷을 읽을 수 있도록 권한 부여
-        paper_feed_bucket.grant_read(trigger_lambda.role)
+        self.paper_feed_bucket.grant_read(trigger_lambda.role)
 
         # Lambda가 Glue Job을 시작할 수 있도록 권한 부여
         glue_role.grant_pass_role(trigger_lambda)
@@ -190,6 +188,45 @@ class EtlStack(Stack):
         # Backfill Lambda에 필요한 Glue Job 시작 권한 부여
         backfill_lambda.add_to_role_policy(
             iam.PolicyStatement(actions=["glue:StartJobRun"], resources=[glue_job_arn])
+        )
+
+    def create_batch_producer_layer(self):
+        """
+        Layer 03: Batch Job Producer 생성
+        s3 버킷에 추가된 논문들을 batch job 제출
+        """
+
+        # Lambda 함수 생성
+        lambda_submit_batch_job = _lambda.Function(
+            self,
+            "SubmitBatchJob",
+            runtime=_lambda.Runtime.PYTHON_3_9,
+            handler="trigger_03_batch_job.handler",  # Lambda 핸들러
+            code=_lambda.Code.from_asset("lambda"),  # Lambda 코드가 저장된 디렉토리
+            environment={
+                "BATCH_JOB_QUEUE": self.job_queue_arn,
+                "BATCH_JOB_DEFINITION": self.job_definition_arn,
+            },
+            timeout=Duration.minutes(5),
+        )
+
+        # S3 객체 생성 이벤트에 대한 Lambda 트리거 추가
+        notification = s3n.LambdaDestination(lambda_submit_batch_job)
+
+        # S3 버킷에 이벤트 알림 설정 (객체 생성 시 Lambda 트리거)
+        self.paper_feed_bucket.add_event_notification(
+            s3.EventType.OBJECT_CREATED, notification
+        )
+
+        # Lambda에 S3 읽기 권한 부여
+        self.paper_feed_bucket.grant_read(lambda_submit_batch_job)
+
+        # Lambda에 Batch 작업 제출 권한 부여
+        lambda_submit_batch_job.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["batch:SubmitJob"],
+                resources=["*"],  # 필요한 경우 더 구체적인 리소스를 설정
+            )
         )
 
     def create_batch_layer(self):
@@ -366,6 +403,8 @@ class EtlStack(Stack):
                 )
             ],
         )
+        self.job_queue_arn = job_queue.job_queue_arn
+        self.job_definition_arn = job_definition.job_definition_arn
 
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
@@ -381,5 +420,11 @@ class EtlStack(Stack):
             ),
         ]
 
+        # S3 버킷 참조
+        self.paper_feed_bucket = s3.Bucket.from_bucket_name(
+            self, "PaperFeedBucket", bucket_name=PAPER_FEED_BUCKET_NAME
+        )
+
         self.create_feed_layer()
         self.create_batch_layer()
+        self.create_batch_producer_layer()

@@ -29,6 +29,7 @@ def handler(event, context):
     last_collection_date = datetime.strptime(last_updated, "%Y-%m-%d")
     start_date = (last_collection_date + timedelta(days=1)).strftime("%Y-%m-%d")
 
+    print(f"Starting Glue job {glue_job_name} with start date {start_date}")
     # Define the parameters to pass to the Glue job
     arguments = {"--category": category, "--start_date": start_date}
 
