@@ -1,11 +1,13 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
-from repositories.vector_db import MemoryVectorDB
 from services.embedding import BertEmbeddingService, SentenceEmbeddingService
 from services.search import SearchMethod, SearchService
 
+from search_server.src.repositories.document_store import MemoryVectorDB
+
 SEARCH_METHOD = SearchMethod.EUCLIDEAN
+DEFAULT_REGION = "ap-northeast-2"
 
 
 @asynccontextmanager
