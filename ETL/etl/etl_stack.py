@@ -363,6 +363,7 @@ class EtlStack(Stack):
         job_definition = batch.EcsJobDefinition(
             self,
             "DocumentEmbedderBatchJobDefinition",
+            retry_attempts=10,
             container=batch.EcsFargateContainerDefinition(
                 self,
                 "DocumentEmbedderFargateContainer",

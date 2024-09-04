@@ -29,7 +29,7 @@ document_store = OpenSearchDocumentStore(
     ],
     index=index,
     http_auth=aws_auth,
-    timeout=300,
+    timeout=900,
     embedding_dim=1024,  # BAAI/bge-m3 output vector dimension
     use_ssl=True,
     verify_certs=True,
