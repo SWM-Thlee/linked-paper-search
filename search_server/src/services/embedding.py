@@ -3,7 +3,6 @@ from abc import ABC
 import torch
 from sentence_transformers import SentenceTransformer
 from transformers import BertModel, BertTokenizer
-
 from utils.logger import log_on_init
 
 
