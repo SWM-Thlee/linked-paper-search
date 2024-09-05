@@ -1,6 +1,7 @@
 import boto3
-from config import *
 from requests_aws4auth import AWS4Auth
+
+DEFAULT_REGION = "ap-northeast-2"
 
 # AWS 인증 정보 설정
 region = DEFAULT_REGION

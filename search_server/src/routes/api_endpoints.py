@@ -1,18 +1,17 @@
-from config import SEARCH_METHOD
+from typing import List
+
 from fastapi import APIRouter, Request
+from haystack import Document
+from models.document import DocumentResponse
 
 router = APIRouter()
 
 
-@router.get("/embedding")
-async def get_embedding(request: Request, query: str):
-    vector = request.app.state.embedding_service.embed_text(query)
-    return {"embedding": vector}
-
-
-@router.get("/search")
+@router.get("/search", response_model=List[DocumentResponse])
 async def search(request: Request, query: str):
-    similar_items = request.app.state.search_service.search_similar(
-        query, SEARCH_METHOD
-    )
-    return {"results": similar_items}
+    results: List[Document] = request.app.state.search_service.query(query)
+    documents = []
+    for doc in results:
+        document = DocumentResponse(content=doc.content, meta=doc.meta)
+        documents.append(document)
+    return documents

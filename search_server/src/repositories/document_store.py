@@ -6,17 +6,18 @@ from utils.aws_auth import aws_auth, opensearch_vpc_endpoint
 from utils.logger import log_on_init
 
 index = "new_index9"
-timeout = 300
+timeout = 900
 use_ssl = True
 verify_certs = True
+embedding_dim = 1024
 
 
-class OpenSearchInterface(OpenSearchDocumentStore):
+class OpenSearchDocumentStore(OpenSearchDocumentStore):
     pass
 
 
 @log_on_init("uvicorn.info")
-class AwsOpenSearch(OpenSearchInterface):
+class AwsOpenSearch(OpenSearchDocumentStore):
 
     def __init__(
         self,
@@ -29,15 +30,18 @@ class AwsOpenSearch(OpenSearchInterface):
                     "port": 443,
                 }
             ],
-            index="test-index",
+            index=index,
             http_auth=aws_auth,
-            use_ssl=True,
-            verify_certs=True,
+            use_ssl=use_ssl,
+            timeout=timeout,
+            embedding_dim=embedding_dim,
+            verify_certs=verify_certs,
             connection_class=RequestsHttpConnection,
         )
 
 
-class LocalOpenSearch(OpenSearchInterface):
+@log_on_init("uvicorn.info")
+class LocalOpenSearch(OpenSearchDocumentStore):
     def __init__(
         self,
     ):
@@ -45,9 +49,9 @@ class LocalOpenSearch(OpenSearchInterface):
         OPENSEARCH_PW = os.environ.get("OPENSEARCH_PW", "password")
 
         super().__init__(
-            index="new_index9",
+            index=index,
             hosts="http://0.0.0.0:9200",
-            embedding_dim=1024,
-            use_ssl=True,
+            embedding_dim=embedding_dim,
+            use_ssl=use_ssl,
             http_auth=(OPENSEARCH_ID, OPENSEARCH_PW),
         )

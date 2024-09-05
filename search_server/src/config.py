@@ -1,29 +1,24 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
-from services.embedding import BertEmbeddingService, SentenceEmbeddingService
-from services.search import SearchMethod, SearchService
-
-from search_server.src.repositories.document_store import MemoryVectorDB
-
-SEARCH_METHOD = SearchMethod.EUCLIDEAN
-DEFAULT_REGION = "ap-northeast-2"
+from repositories.document_store import AwsOpenSearch, LocalOpenSearch
+from services.embedding import BgeM3SetenceEmbedder
+from services.ranker import RankerService
+from services.search import SearchService
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
-    fast api life cycle동안 singleton으로 사용할 search service, db connection instance 삽입
-    :param app:
-    :return:
+    fast api life cycle동안 singleton으로 사용할 search service 생성
     """
+    text_embedder = BgeM3SetenceEmbedder()
+    document_store = LocalOpenSearch()
+    ranker = RankerService()
+    app.state.search_service = SearchService(
+        text_embedder=text_embedder,
+        document_store=document_store,
+        ranker=ranker,
+    )
 
-    app.state.embedding_service = SentenceEmbeddingService()
-    app.state.db = MemoryVectorDB()
-    app.state.search_service = SearchService(app.state.db, app.state.embedding_service)
-    try:
-        # db connection pool setup or insert test dataset
-        yield
-    finally:
-        # close db connection
-        app.state.db.clear()
+    yield
