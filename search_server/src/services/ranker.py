@@ -6,7 +6,7 @@ class RankerService(TransformersSimilarityRanker):
     pass
 
 
-@log_on_init("uvicorn.info")
+@log_on_init()
 class BgeReRankderService(RankerService):
     def __init__(self):
         super().__init__(

@@ -178,5 +178,4 @@ def pretty_print_results(prediction):
         print()
 
 
-# pretty_print_results(result["ranker"])
-print(result["ranker"].keys())
+pretty_print_results(result["ranker"])
