@@ -368,8 +368,8 @@ class EtlStack(Stack):
                 self,
                 "DocumentEmbedderFargateContainer",
                 image=docker_container_image,
-                cpu=2,
-                memory=Size.mebibytes(4096),  # 2GB 설정 시 out of memory 발생
+                cpu=4,
+                memory=Size.mebibytes(4096 * 2),  # 2GB 설정 시 out of memory 발생
                 execution_role=ecs_task_role,
                 job_role=ecs_task_role,
                 # log_configuration=batch.Log(
