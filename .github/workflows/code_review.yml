@@ -1,0 +1,26 @@
+name: "LLM Code Review Action"
+
+on:
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  issues: write  # GITHUB_TOKEN에 이슈 및 PR에 코멘트를 달 수 있는 권한 부여
+
+jobs:
+  code-review:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v3
+
+      - name: Run external Code Review Action
+        uses: ljy2855/llm_code_review/.github/actions/code_review@main
+        with:
+          github_owner: ${{ github.repository_owner }}  # 레포지토리 소유자 추가
+          pr_number: ${{ github.event.pull_request.number }}
+          repository: ${{ github.repository }}
+          github_token: ${{ secrets.MY_PAT }}  # Personal Access Token 사용
+          ollama_api_url: ${{ secrets.OLLAMA_API_URL }}
+          ollama_model: "llama3.1:8b"
