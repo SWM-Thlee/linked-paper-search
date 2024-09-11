@@ -6,13 +6,6 @@ from opensearchpy import RequestsHttpConnection
 from requests_aws4auth import AWS4Auth
 from utils.logger import log_on_init
 
-index = "new_index9"
-timeout = 900
-use_ssl = True
-verify_certs = True
-embedding_dim = 1024
-DEFAULT_REGION = "ap-northeast-2"
-
 
 class OpenSearchDocumentStore(OpenSearchDocumentStore):
     pass
@@ -23,6 +16,12 @@ class AwsOpenSearch(OpenSearchDocumentStore):
 
     def __init__(
         self,
+        index="new_index9",
+        timeout=900,
+        use_ssl=True,
+        verify_certs=True,
+        embedding_dim=1024,
+        DEFAULT_REGION="ap-northeast-2",
     ):
         credentials = boto3.Session().get_credentials()
         aws_auth = AWS4Auth(
@@ -58,6 +57,9 @@ class AwsOpenSearch(OpenSearchDocumentStore):
 class LocalOpenSearch(OpenSearchDocumentStore):
     def __init__(
         self,
+        index="new_index9",
+        use_ssl=True,
+        embedding_dim=1024,
     ):
         OPENSEARCH_ID = os.environ.get("OPENSEARCH_ID", "admin")
         OPENSEARCH_PW = os.environ.get("OPENSEARCH_PW", "password")
