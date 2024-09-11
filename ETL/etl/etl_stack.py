@@ -372,14 +372,6 @@ class EtlStack(Stack):
                 memory=Size.mebibytes(4096 * 2),  # 2GB 설정 시 out of memory 발생
                 execution_role=ecs_task_role,
                 job_role=ecs_task_role,
-                # log_configuration=batch.Log(
-                #     log_driver=batch.LogDriver.AWSLOGS,
-                #     options={
-                #         "awslogs-group": "/aws/batch/job",
-                #         "awslogs-region": self.region,
-                #         "awslogs-stream-prefix": "MyBatchJob",
-                #     },
-                # ),
             ),
         )
 
@@ -389,8 +381,8 @@ class EtlStack(Stack):
             "DocumentEmbedderComputeEnvironment",
             vpc=self.vpc,
             vpc_subnets=self.vpc_subnets[0],
-            maxv_cpus=8,
-            spot=True,  # On-Demand 대신 Spot Instance 사용
+            maxv_cpus=16,
+            replace_compute_environment=True,  # 기존 Compute Environment 대체
         )
 
         # AWS Batch Job Queue 생성
