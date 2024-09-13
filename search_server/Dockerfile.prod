@@ -1,5 +1,5 @@
 # ECS compute type이 Fargate이므로, linux/amd64 아키텍처를 선택
-FROM --platform=linux/amd64 python:3.9-slim
+FROM python:3.9-slim
 
 WORKDIR /app
 
@@ -11,10 +11,20 @@ COPY ./src ./src
 
 WORKDIR /app/src
 
+
+# 모델을 다운로드할 디렉토리 생성
+RUN mkdir -p /app/models/bge-reranker-v2-m3 && \
+    mkdir -p /app/models/bge-m3
+
+# 모델 다운로드 및 지정된 경로에 저장
+RUN python -c "from transformers import AutoModel; AutoModel.from_pretrained('BAAI/bge-reranker-v2-m3', cache_dir='/app/models/bge-reranker-v2-m3')" && \
+    python -c "from transformers import AutoModel; AutoModel.from_pretrained('BAAI/bge-m3', cache_dir='/app/models/bge-m3')"
+
 RUN python -m compileall .
 
 EXPOSE 8000
 
 ENV ENVIRONMENT=prod
-
+ENV BGE_RERANKER_MODEL_PATH=/app/models/bge-reranker-v2-m3
+ENV BGE_M3_MODEL_PATH=/app/models/bge-m3
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

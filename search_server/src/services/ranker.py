@@ -1,5 +1,11 @@
+import os
+
 from haystack.components.rankers import TransformersSimilarityRanker
 from utils.logger import log_on_init
+
+bge_reranker_model_path = os.getenv(
+    "BGE_RERANKER_MODEL_PATH", "/app/models/bge-reranker-v2-m3"
+)
 
 
 class RankerService(TransformersSimilarityRanker):
@@ -10,6 +16,6 @@ class RankerService(TransformersSimilarityRanker):
 class BgeReRankderService(RankerService):
     def __init__(self, top_k: int = 100):
         super().__init__(
-            model="BAAI/bge-reranker-v2-m3",
+            model=bge_reranker_model_path,
             top_k=top_k,
         )
