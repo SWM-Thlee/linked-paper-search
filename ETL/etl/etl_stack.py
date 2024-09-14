@@ -353,7 +353,10 @@ class EtlStack(Stack):
             "ecr-docker-image-asset",
             platform=aws_ecr_assets.Platform.LINUX_AMD64,
             directory=BATCH_ECS_DOCKER_DIR,  # Dockerfile이 있는 경로 (batch_ecs/Dockerfile)
+            extra_hash="latest",  # 이미지 태그
         )
+
+        # docker_image_asset.repository.add_lifecycle_rule(tag_prefix_list=["latest"])
 
         docker_container_image = ecs.ContainerImage.from_docker_image_asset(
             docker_image_asset
@@ -396,6 +399,22 @@ class EtlStack(Stack):
                 )
             ],
         )
+
+        # VPC 엔드포인트 추가
+        # 중요! 해당 endpoint 없이 ecr에 접근하면 NAT Gateway를 통해 인터넷을 통해 접근해야 함
+        self.vpc.add_interface_endpoint(
+            "EcrApiEndpoint", service=ec2.InterfaceVpcEndpointAwsService.ECR
+        )
+
+        self.vpc.add_interface_endpoint(
+            "EcrDkrEndpoint", service=ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER
+        )
+
+        # S3 VPC 엔드포인트도 필요한 경우 추가
+        self.vpc.add_gateway_endpoint(
+            "S3Endpoint", service=ec2.GatewayVpcEndpointAwsService.S3
+        )
+
         self.job_queue_arn = job_queue.job_queue_arn
         self.job_definition_arn = job_definition.job_definition_arn
 
