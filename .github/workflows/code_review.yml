@@ -1,4 +1,4 @@
-name: 'Test Container Action'
+name: 'LLM Code Review Action'
 
 on:
   pull_request:
