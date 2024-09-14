@@ -1,26 +1,30 @@
-name: "LLM Code Review Action"
+name: 'Test Container Action'
 
 on:
-  pull_request_target:
+  pull_request:
     types: [opened]
 
 permissions:
-  issues: write  # GITHUB_TOKEN에 이슈 및 PR에 코멘트를 달 수 있는 권한 부여
+  contents: read # 콘텐츠 접근 권한 (리포지토리 파일 읽기)
+  pull-requests: write
 
 jobs:
-  code-review:
+  test-action:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout the code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Run external Code Review Action
-        uses: ljy2855/llm_code_reviewer@main
+      - name: Run Container Action
+        uses: ljy2855/llm_code_reviewer@v1
         with:
-          github_owner: ${{ github.repository_owner }}  # 레포지토리 소유자 추가
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_owner: ${{ github.repository_owner }}
+          github_repository: ${{ github.repository }}
           pr_number: ${{ github.event.pull_request.number }}
-          repository: ${{ github.repository }}
-          github_token: ${{ secrets.MY_PAT }}  # Personal Access Token 사용
+          pr_title: ${{ github.event.pull_request.title }}
+          pr_body: ${{ github.event.pull_request.body }}
           ollama_api_url: ${{ secrets.OLLAMA_API_URL }}
-          ollama_model: "llama3.1:8b"
+          ollama_model: 'llama3.1:8b'
+          prompt_type: 'GENERAL_REVIEW'
+          prompt_language: 'KR'
