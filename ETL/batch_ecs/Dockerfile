@@ -18,8 +18,14 @@ COPY . .
 ENV OMP_NUM_THREADS=4
 ENV KMP_AFFINITY="granularity=fine,compact,1,0"
 
-# Make port 80 available to the world outside this container (if needed)
+# 모델을 다운로드할 디렉토리 생성
+# 모델 다운로드 및 지정된 경로에 저장
+RUN mkdir -p /app/models/bge-m3 && \
+    python -c "from transformers import AutoModel; AutoModel.from_pretrained('BAAI/bge-m3', cache_dir='/app/models/bge-m3')"
+
 EXPOSE 80
+
+ENV BGE_M3_MODEL_PATH=/app/models/bge-m3
 
 # Run main.py when the container launches
 CMD ["python", "main.py"]
