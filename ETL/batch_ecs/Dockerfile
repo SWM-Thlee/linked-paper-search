@@ -43,5 +43,7 @@ COPY --from=model-builder /model_cache /root/.cache/huggingface/hub
 
 ENV BGE_M3_MODEL_PATH=/app/models/bge-m3
 
+ENV BGE_M3_MODEL_PATH=/app/models/bge-m3
+
 # Run main.py when the container launches
 CMD ["python", "main.py"]
