@@ -357,7 +357,6 @@ class EtlStack(Stack):
             "ecr-docker-image-asset",
             platform=aws_ecr_assets.Platform.LINUX_AMD64,
             directory=BATCH_ECS_DOCKER_DIR,  # Dockerfile이 있는 경로 (batch_ecs/Dockerfile)
-            extra_hash="latest",  # 이미지 태그
         )
 
         # docker_image_asset.repository.add_lifecycle_rule(tag_prefix_list=["latest"])
