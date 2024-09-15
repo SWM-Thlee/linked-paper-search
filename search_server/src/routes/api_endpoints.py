@@ -7,6 +7,11 @@ from models.document import DocumentMeta, DocumentResponse
 router = APIRouter()
 
 
+@router.get("/")
+async def read_root():
+    return {"message": "Hello, world!"}
+
+
 @router.get("/search", response_model=List[DocumentResponse])
 async def search(request: Request, query: str):
     results: List[Document] = request.app.state.search_service.query(query)
