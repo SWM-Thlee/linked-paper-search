@@ -16,6 +16,6 @@ class RankerService(TransformersSimilarityRanker):
 class BgeReRankderService(RankerService):
     def __init__(self, top_k: int = 100):
         super().__init__(
-            model=bge_reranker_model_path,
+            model="BAAI/bge-reranker-v2-m3",
             top_k=top_k,
         )
