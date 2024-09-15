@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM deepset/haystack:base-main
+FROM python:3.9-slim
 
 
 # Set the working directory in the container
@@ -18,14 +18,8 @@ COPY . .
 ENV OMP_NUM_THREADS=4
 ENV KMP_AFFINITY="granularity=fine,compact,1,0"
 
-# 모델을 다운로드할 디렉토리 생성
-# 모델 다운로드 및 지정된 경로에 저장
-RUN mkdir -p /app/models/bge-m3 && \
-    python -c "from transformers import AutoModel; AutoModel.from_pretrained('BAAI/bge-m3', cache_dir='/app/models/bge-m3')"
+RUN python -c "from haystack.components.embedders import SentenceTransformersTextEmbedder; SentenceTransformersTextEmbedder('BAAI/bge-m3').warm_up()"
 
-EXPOSE 80
-
-ENV BGE_M3_MODEL_PATH=/app/models/bge-m3
 
 # Run main.py when the container launches
 CMD ["python", "main.py"]
