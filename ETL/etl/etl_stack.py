@@ -1,4 +1,4 @@
-from aws_cdk import Aws, Duration, RemovalPolicy, Size, Stack
+from aws_cdk import Aws, Duration, Fn, RemovalPolicy, Size, Stack
 from aws_cdk import aws_batch as batch
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecr_assets
@@ -25,12 +25,12 @@ DOMAIN_DATA_NODE_INSTANCE_TYPE = (
     "c7g.large.search"  # vCPU: 2 memory: 4GB Bill/Hour: USD 0.112
 )
 DOMAIN_DATA_NODE_INSTANCE_COUNT = (
-    1  # 현재 데이터 노드 하나만 사용 후 추후 scale-out 필요 시 증가
+    3  # 현재 데이터 노드 하나만 사용 후 추후 scale-out 필요 시 증가
 )
 DOMAIN_INSTANCE_VOLUME_SIZE = 100  # 100만개 논문 수집 시 약 26GB 저장 공간 필요
 DOMAIN_AZ_COUNT = 1  # Multi-AZ 설정
 DOMAIN_MASTER_NODE_INSTANCE_TYPE = "c6g.large.search"
-DOMAIN_MASTER_NODE_INSTANCE_COUNT = 0
+DOMAIN_MASTER_NODE_INSTANCE_COUNT = 2
 
 ## To enable UW, please make master node count as 3 or 5, and UW node count as minimum 2
 ## Also change data node to be non T2/T3 as UW does not support T2/T3 as data nodes
@@ -297,6 +297,9 @@ class EtlStack(Stack):
             description="Allow all inbound traffic",
         )
 
+        # OpenSearch에 접근하기 위한 Search Service Task Role ARN 가져오기
+        search_service_task_role_arn = Fn.import_value("SearchServiceTaskRoleArn")
+
         # OpenSearch 도메인 생성
         opensearch_domain = opensearch.Domain(
             self,
@@ -309,7 +312,7 @@ class EtlStack(Stack):
                 opensearch_sg
             ],  # OpenSearch 기본 보안 그룹은 inbound 트래픽을 허용하지 않음
             capacity=opensearch.CapacityConfig(
-                multi_az_with_standby_enabled=False,  # 현재 단일 노드로 mutli-AZ 설정 비활성화
+                multi_az_with_standby_enabled=False,
                 data_node_instance_type=DOMAIN_DATA_NODE_INSTANCE_TYPE,
                 data_nodes=DOMAIN_DATA_NODE_INSTANCE_COUNT,
                 master_node_instance_type=DOMAIN_MASTER_NODE_INSTANCE_TYPE,
@@ -326,8 +329,8 @@ class EtlStack(Stack):
             enforce_https=True,
             node_to_node_encryption=True,
             encryption_at_rest=opensearch.EncryptionAtRestOptions(enabled=True),
-            # zone_awareness=opensearch.ZoneAwarenessConfig( # Multi-AZ 설정 data node 2개 이상일 때만 사용 가능
-            #     enabled=False,
+            # zone_awareness=opensearch.ZoneAwarenessConfig(  # Multi-AZ 설정 data node 2개 이상일 때만 사용 가능
+            #     enabled=True,
             #     availability_zone_count=DOMAIN_AZ_COUNT,
             # ),
             fine_grained_access_control=opensearch.AdvancedSecurityOptions(
@@ -337,7 +340,8 @@ class EtlStack(Stack):
                 iam.PolicyStatement(
                     effect=iam.Effect.ALLOW,
                     principals=[
-                        iam.ArnPrincipal(ecs_task_role.role_arn)
+                        iam.ArnPrincipal(ecs_task_role.role_arn),
+                        iam.ArnPrincipal(search_service_task_role_arn),
                     ],  # ecs_task_role에게만 접근 권한 부여
                     actions=["es:*"],
                     resources=[
