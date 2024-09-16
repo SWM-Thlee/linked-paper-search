@@ -1,4 +1,4 @@
-from aws_cdk import Aws, Duration, RemovalPolicy, Size, Stack
+from aws_cdk import Aws, Duration, Fn, RemovalPolicy, Size, Stack
 from aws_cdk import aws_batch as batch
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecr_assets
