@@ -37,9 +37,6 @@ document_store = OpenSearchDocumentStore(
     connection_class=RequestsHttpConnection,  # 중요: RequestsHttpConnection을 사용해야만 OpenSearchDocumentStore가 정상적으로 작동함
 )
 
-# 모델을 다운로드할 로컬 경로
-# 로컬 모델 경로 설정 (Docker 이미지 내부 경로)
-local_embedding_model_path = os.getenv("BGE_M3_MODEL_PATH", "/app/models/bge-m3")
 
 # Pipeline 설정
 hybrid_indexing = Pipeline()
@@ -49,7 +46,7 @@ hybrid_indexing.add_component(
 )
 hybrid_indexing.add_component(
     "document_embedder",
-    SentenceTransformersDocumentEmbedder(model=local_embedding_model_path),
+    SentenceTransformersDocumentEmbedder(model=embedding_model),
 )
 hybrid_indexing.add_component(
     "writer",
