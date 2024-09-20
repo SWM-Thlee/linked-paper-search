@@ -305,7 +305,7 @@ class EtlStack(Stack):
             self,
             "DocumentStoreOpenSearch",
             domain_name=DOMAIN_NAME,
-            version=opensearch.EngineVersion.OPENSEARCH_2_13,
+            version=opensearch.EngineVersion.OPENSEARCH_2_15,
             vpc=self.vpc,
             vpc_subnets=self.vpc_subnets,
             security_groups=[
