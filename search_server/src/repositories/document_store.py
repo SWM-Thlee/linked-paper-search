@@ -3,8 +3,9 @@ import os
 import boto3
 from haystack_integrations.document_stores.opensearch import OpenSearchDocumentStore
 from opensearchpy import RequestsHttpConnection
+from opensearchpy.exceptions import AuthorizationException
 from requests_aws4auth import AWS4Auth
-from utils.logger import log_on_init
+from utils.logger import log_on_init, logger
 
 
 class OpenSearchDocumentStore(OpenSearchDocumentStore):
@@ -23,19 +24,18 @@ class AwsOpenSearch(OpenSearchDocumentStore):
         embedding_dim=1024,
         DEFAULT_REGION="ap-northeast-2",
     ):
-        credentials = boto3.Session().get_credentials()
-        aws_auth = AWS4Auth(
-            credentials.access_key,
-            credentials.secret_key,
-            DEFAULT_REGION,
-            "es",
-            session_token=credentials.token,
-        )
+        self.DEFAULT_REGION = DEFAULT_REGION
+        self.index = index
+        self.timeout = timeout
+        self.use_ssl = use_ssl
+        self.verify_certs = verify_certs
+        self.embedding_dim = embedding_dim
 
-        # OpenSearchDocumentStore VPC 엔드포인트 retreive
-        client = boto3.client("opensearch", region_name="ap-northeast-2")
+        # OpenSearchDocumentStore VPC 엔드포인트 retrieve
+        client = boto3.client("opensearch", region_name=self.DEFAULT_REGION)
         response = client.describe_domain(DomainName="opensearch-document-store")
         opensearch_vpc_endpoint = response["DomainStatus"]["Endpoints"]["vpc"]
+
         super().__init__(
             hosts=[
                 {
@@ -43,14 +43,51 @@ class AwsOpenSearch(OpenSearchDocumentStore):
                     "port": 443,
                 }
             ],
-            index=index,
-            http_auth=aws_auth,
-            use_ssl=use_ssl,
-            timeout=timeout,
-            embedding_dim=embedding_dim,
-            verify_certs=verify_certs,
+            index=self.index,
+            use_ssl=self.use_ssl,
+            timeout=self.timeout,
+            embedding_dim=self.embedding_dim,
+            verify_certs=self.verify_certs,
             connection_class=RequestsHttpConnection,
         )
+        self.update_auth_credentials()
+
+    def update_auth_credentials(self):
+        """
+        자격 증명을 새로고침하여 AWS4Auth 객체를 갱신하는 함수
+        """
+        credentials = boto3.Session().get_credentials().get_frozen_credentials()
+        self.aws_auth = AWS4Auth(
+            credentials.access_key,
+            credentials.secret_key,
+            self.DEFAULT_REGION,
+            "es",
+            session_token=credentials.token,
+        )
+        print(f"Updated AWS4Auth credentials: {self.aws_auth.date}")
+
+        # 기존 연결에 새로운 자격 증명 갱신
+        self._http_auth = self.aws_auth
+
+    def _search_documents(self, *args, **kwargs):
+        """
+        OpenSearchDocumentStore의 _search_documents 실행중 403 AuthorizationException catch
+        """
+        try:
+            # 상속받은 메서드 로직을 그대로 실행
+            return super()._search_documents(*args, **kwargs)
+        except AuthorizationException as e:
+            if e.status_code == 403:
+                logger.warning(
+                    "403 AuthorizationException: Refreshing AWS credentials."
+                )
+                self._client.close()
+                self.update_auth_credentials()
+                # 자격 증명 갱신 후 메서드 다시 실행
+                return super()._search_documents(*args, **kwargs)
+            else:
+                # 다른 예외는 다시 raise
+                raise e
 
 
 @log_on_init()
