@@ -22,12 +22,12 @@ PAPER_FEED_BUCKET_NAME = "paper-feed"
 # Layer 04: Batch Layer
 DOMAIN_NAME = "opensearch-document-store"
 DOMAIN_DATA_NODE_INSTANCE_TYPE = (
-    "c7g.large.search"  # vCPU: 2 memory: 4GB Bill/Hour: USD 0.112
+    "m7g.large.search"  # vCPU: 2 memory: 4GB Bill/Hour: USD 0.112
 )
 DOMAIN_DATA_NODE_INSTANCE_COUNT = (
     3  # 현재 데이터 노드 하나만 사용 후 추후 scale-out 필요 시 증가
 )
-DOMAIN_INSTANCE_VOLUME_SIZE = 100  # 100만개 논문 수집 시 약 26GB 저장 공간 필요
+DOMAIN_INSTANCE_VOLUME_SIZE = 200  # 100만개 논문 수집 시 약 26GB 저장 공간 필요
 DOMAIN_AZ_COUNT = 1  # Multi-AZ 설정
 DOMAIN_MASTER_NODE_INSTANCE_TYPE = "c6g.large.search"
 DOMAIN_MASTER_NODE_INSTANCE_COUNT = 2
