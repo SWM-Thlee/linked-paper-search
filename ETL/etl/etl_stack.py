@@ -29,8 +29,8 @@ DOMAIN_DATA_NODE_INSTANCE_COUNT = (
 )
 DOMAIN_INSTANCE_VOLUME_SIZE = 200  # 100만개 논문 수집 시 약 26GB 저장 공간 필요
 DOMAIN_AZ_COUNT = 1  # Multi-AZ 설정
-DOMAIN_MASTER_NODE_INSTANCE_TYPE = "c6g.large.search"
-DOMAIN_MASTER_NODE_INSTANCE_COUNT = 2
+DOMAIN_MASTER_NODE_INSTANCE_TYPE = "c7g.large.search"
+DOMAIN_MASTER_NODE_INSTANCE_COUNT = 3
 
 ## To enable UW, please make master node count as 3 or 5, and UW node count as minimum 2
 ## Also change data node to be non T2/T3 as UW does not support T2/T3 as data nodes
