@@ -8,7 +8,7 @@ from services.ranker import BgeReRankderService
 from services.search import SearchService
 from utils.logger import logger
 
-result_top_k = 100  # ranking 이후 상위 몇개의 결과를 가져올지 결정
+result_top_k = 20  # ranking 이후 상위 몇개의 결과를 가져올지 결정
 index = "new_index9"
 timeout = 900
 use_ssl = True
