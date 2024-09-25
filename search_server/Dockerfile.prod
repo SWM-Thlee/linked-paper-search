@@ -1,0 +1,22 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY ./src ./src
+
+WORKDIR /app/src
+
+# 모델 다운로드 및 Hugging face cahce 디렉토리에 저장 default: ~/.cache/huggingface
+# docker build 시에는 cache 파일 같이 복사하여, 컨테이너 runtime에 model load 외부에서 다운로드 받지 않도록 함
+RUN python -c "from haystack.components.rankers import TransformersSimilarityRanker; TransformersSimilarityRanker('BAAI/bge-reranker-v2-m3').warm_up()" && \
+    python -c "from haystack.components.embedders import SentenceTransformersTextEmbedder; SentenceTransformersTextEmbedder('BAAI/bge-m3').warm_up()"
+
+
+EXPOSE 8000
+
+ENV ENVIRONMENT=prod
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

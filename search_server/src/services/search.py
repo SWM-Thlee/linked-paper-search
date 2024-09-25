@@ -9,16 +9,15 @@ from services.embedding import EmbeddingService
 from services.ranker import RankerService
 from utils.logger import log_on_init
 
-top_k = 100  # 검색 결과 중 상위 몇 개를 가져올지 결정
 
-
-@log_on_init("uvicorn.info")
+@log_on_init()
 class SearchService:
     def __init__(
         self,
         document_store: OpenSearchDocumentStore,
         ranker: RankerService,
         text_embedder: EmbeddingService,
+        top_k=10,
     ):
         embedding_retriever = OpenSearchEmbeddingRetriever(
             document_store=document_store,

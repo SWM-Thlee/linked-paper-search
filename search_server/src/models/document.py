@@ -16,5 +16,6 @@ class DocumentMeta(BaseModel):
 
 
 class DocumentResponse(BaseModel):
-    content: str
+    id: str
+    weight: float
     meta: DocumentMeta

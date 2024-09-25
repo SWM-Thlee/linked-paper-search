@@ -1,10 +1,10 @@
 import logging
 from functools import wraps
 
+logger = logging.getLogger("uvicorn.info")
 
-def log_on_init(logger_name):
-    logger = logging.getLogger(logger_name)
 
+def log_on_init():
     def decorator(cls):
         # 클래스의 원래 __init__ 메소드를 감싸는 래퍼 함수
         original_init = cls.__init__

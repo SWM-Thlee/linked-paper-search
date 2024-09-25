@@ -1,0 +1,22 @@
+# Python 베이스 이미지 선택
+FROM python:3.9-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY ./src ./src
+
+WORKDIR /app/src
+
+RUN python -m compileall .
+
+EXPOSE 8000
+
+ENV ENVIRONMENT=dev
+ENV OPENSEARCH_ID=admin
+ENV OPENSEARCH_PW=Wlsdyd0101
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
