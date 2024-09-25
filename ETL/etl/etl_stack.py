@@ -22,7 +22,7 @@ PAPER_FEED_BUCKET_NAME = "paper-feed"
 # Layer 04: Batch Layer
 DOMAIN_NAME = "opensearch-document-store"
 DOMAIN_DATA_NODE_INSTANCE_TYPE = (
-    "m7g.large.search"  # vCPU: 2 memory: 4GB Bill/Hour: USD 0.112
+    "r7g.large.search"  # vCPU: 2 memory: 16GB Bill/Hour: USD 0.112
 )
 DOMAIN_DATA_NODE_INSTANCE_COUNT = (
     3  # 현재 데이터 노드 하나만 사용 후 추후 scale-out 필요 시 증가
