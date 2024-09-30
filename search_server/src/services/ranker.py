@@ -14,8 +14,9 @@ class RankerService(TransformersSimilarityRanker):
 
 @log_on_init()
 class BgeReRankderService(RankerService):
-    def __init__(self, top_k: int = 100):
+    def __init__(self, top_k: int = 100, device=None):
         super().__init__(
             model="BAAI/bge-reranker-v2-m3",
             top_k=top_k,
+            device=device,
         )

@@ -19,7 +19,7 @@ aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --
 
 # Build the Docker image
 echo "Building Docker image..."
-docker build --platform=linux/amd64 -t $ECR_REPOSITORY_NAME:$IMAGE_TAG -f $DOCKERFILE .
+docker buildx build --platform linux/amd64 -t $ECR_REPOSITORY_NAME:$IMAGE_TAG -f $DOCKERFILE .
 
 # Tag the Docker image for ECR
 echo "Tagging Docker image..."
@@ -32,5 +32,5 @@ docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY_NA
 echo "Docker image has been pushed to ECR: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY_NAME:$IMAGE_TAG"
 
 # Optional: Clean up local Docker images
-# docker rmi $ECR_REPOSITORY_NAME:$IMAGE_TAG
-# docker rmi $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY_NAME:$IMAGE_TAG
+#docker rmi $ECR_REPOSITORY_NAME:$IMAGE_TAG
+docker rmi $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY_NAME:$IMAGE_TAG
