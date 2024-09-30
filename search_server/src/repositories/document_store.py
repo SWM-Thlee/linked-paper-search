@@ -49,6 +49,7 @@ class AwsOpenSearch(OpenSearchDocumentStore):
             embedding_dim=self.embedding_dim,
             verify_certs=self.verify_certs,
             connection_class=RequestsHttpConnection,
+            return_embedding=True,
         )
         self.update_auth_credentials()
 
@@ -56,7 +57,7 @@ class AwsOpenSearch(OpenSearchDocumentStore):
         """
         자격 증명을 새로고침하여 AWS4Auth 객체를 갱신하는 함수
         """
-        credentials = boto3.Session().get_credentials().get_frozen_credentials()
+        credentials = boto3.Session().get_credentials()
         self.aws_auth = AWS4Auth(
             credentials.access_key,
             credentials.secret_key,
@@ -107,4 +108,5 @@ class LocalOpenSearch(OpenSearchDocumentStore):
             embedding_dim=embedding_dim,
             use_ssl=use_ssl,
             http_auth=(OPENSEARCH_ID, OPENSEARCH_PW),
+            return_embedding=True,
         )
