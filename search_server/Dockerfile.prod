@@ -1,3 +1,31 @@
+# Stage 1: 모델을 미리 다운로드하여 캐시하는 빌더 이미지
+FROM python:3.9-slim AS model-builder
+
+RUN pip install -U "huggingface_hub[cli]"
+
+# BAAI/bge-reranker-v2-m3 모델의 필요한 파일 다운로드 및 캐시 저장
+RUN huggingface-cli download BAAI/bge-reranker-v2-m3 config.json --cache-dir=/model_cache && \
+    huggingface-cli download BAAI/bge-reranker-v2-m3 sentencepiece.bpe.model --cache-dir=/model_cache && \
+    huggingface-cli download BAAI/bge-reranker-v2-m3 tokenizer.json --cache-dir=/model_cache && \
+    huggingface-cli download BAAI/bge-reranker-v2-m3 model.safetensors --cache-dir=/model_cache && \
+    huggingface-cli download BAAI/bge-reranker-v2-m3 special_tokens_map.json --cache-dir=/model_cache && \
+    huggingface-cli download BAAI/bge-reranker-v2-m3 tokenizer_config.json --cache-dir=/model_cache
+
+# BAAI/bge-m3 모델의 전체 파일 다운로드 및 캐시 저장
+RUN huggingface-cli download BAAI/bge-m3 config_sentence_transformers.json --cache-dir=/model_cache && \
+    huggingface-cli download BAAI/bge-m3 modules.json --cache-dir=/model_cache && \
+    huggingface-cli download BAAI/bge-m3 README.md --cache-dir=/model_cache && \
+    huggingface-cli download BAAI/bge-m3 sentence_bert_config.json --cache-dir=/model_cache && \
+    huggingface-cli download BAAI/bge-m3 config.json --cache-dir=/model_cache && \
+    huggingface-cli download BAAI/bge-m3 pytorch_model.bin --cache-dir=/model_cache && \
+    huggingface-cli download BAAI/bge-m3 tokenizer_config.json --cache-dir=/model_cache && \
+    huggingface-cli download BAAI/bge-m3 sentencepiece.bpe.model --cache-dir=/model_cache && \
+    huggingface-cli download BAAI/bge-m3 tokenizer.json --cache-dir=/model_cache && \
+    huggingface-cli download BAAI/bge-m3 special_tokens_map.json --cache-dir=/model_cache && \
+    huggingface-cli download BAAI/bge-m3 1_Pooling/config.json --cache-dir=/model_cache
+
+
+# Stage 2: 최종 런타임 이미지
 FROM python:3.9-slim
 
 WORKDIR /app
@@ -10,13 +38,14 @@ COPY ./src ./src
 
 WORKDIR /app/src
 
-# 모델 다운로드 및 Hugging face cahce 디렉토리에 저장 default: ~/.cache/huggingface
-# docker build 시에는 cache 파일 같이 복사하여, 컨테이너 runtime에 model load 외부에서 다운로드 받지 않도록 함
-RUN python -c "from haystack.components.rankers import TransformersSimilarityRanker; TransformersSimilarityRanker('BAAI/bge-reranker-v2-m3').warm_up()" && \
-    python -c "from haystack.components.embedders import SentenceTransformersTextEmbedder; SentenceTransformersTextEmbedder('BAAI/bge-m3').warm_up()"
-
+# Stage 1에서 모델 캐시 파일을 복사
+COPY --from=model-builder /model_cache /root/.cache/huggingface/hub
 
 EXPOSE 8000
 
 ENV ENVIRONMENT=prod
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
+ENV CUDA_VISIBLE_DEVICES=0
+
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

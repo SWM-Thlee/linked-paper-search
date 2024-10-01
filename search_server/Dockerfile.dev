@@ -1,4 +1,16 @@
-# Python 베이스 이미지 선택
+# Stage 1: 모델을 미리 다운로드하여 캐시하는 빌더 이미지
+FROM python:3.9-slim AS model-builder
+
+WORKDIR /app
+
+RUN pip install -U "huggingface_hub[cli]"
+
+# BAAI/bge-reranker-v2-m3 및 BAAI/bge-m3 모델 다운로드 및 캐시 저장
+RUN huggingface-cli download BAAI/bge-reranker-v2-m3 --cache-dir=/model_cache && \
+    huggingface-cli download BAAI/bge-m3 --cache-dir=/model_cache
+
+
+# Stage 2: 최종 런타임 이미지
 FROM python:3.9-slim
 
 WORKDIR /app
@@ -11,7 +23,8 @@ COPY ./src ./src
 
 WORKDIR /app/src
 
-RUN python -m compileall .
+# Stage 1에서 모델 캐시 파일을 복사
+COPY --from=model-builder /model_cache /root/.cache/huggingface/hub
 
 EXPOSE 8000
 

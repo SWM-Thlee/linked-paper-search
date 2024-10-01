@@ -10,8 +10,11 @@ class EmbeddingService(SentenceTransformersTextEmbedder):
 
 @log_on_init()
 class BgeM3SetenceEmbedder(EmbeddingService):
-    def __init__(self):
-        super().__init__(model="BAAI/bge-m3")
+    def __init__(self, device=None):
+        super().__init__(
+            model="BAAI/bge-m3",
+            device=device,
+        )
 
 
 @log_on_init()
