@@ -1,7 +1,7 @@
 # Stage 1: 모델을 미리 다운로드하여 캐시하는 빌더 이미지
 FROM python:3.9-slim AS model-builder
 
-RUN pip install -U "huggingface_hub[cli]"
+RUN pip install --no-cache-dir huggingface_hub[cli]==0.24.6
 
 # BAAI/bge-reranker-v2-m3 모델의 필요한 파일 다운로드 및 캐시 저장
 RUN huggingface-cli download BAAI/bge-reranker-v2-m3 config.json --cache-dir=/model_cache && \
