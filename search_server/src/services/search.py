@@ -57,13 +57,55 @@ class SearchService:
         query: str,
         **kwargs,  # TODO: 검색 필터링 옵션 추가
     ) -> List[DocumentResponse]:
+        filter_categoreis = kwargs.get("filter_categories")
+        filter_start_date = kwargs.get("filter_start_date")
+        filter_end_date = kwargs.get("filter_end_date")
+
+        # 기본 필터 설정
+        filters = {"operator": "AND", "conditions": []}
+
+        # 날짜 필터 추가
+        if filter_start_date:
+            # 시작 날짜만 있는 경우 greater than or equal
+            date_condition = {
+                "field": "meta.datestamp",
+                "operator": ">=",
+                "value": filter_start_date,
+            }
+            filters["conditions"].append(date_condition)
+        if filter_end_date:
+            # 끝 날짜만 있는 경우 less than or equal
+            date_condition = {
+                "field": "meta.datestamp",
+                "operator": "<=",
+                "value": filter_end_date,
+            }
+            filters["conditions"].append(date_condition)
+
+        # 필드 필터 추가
+        if filter_categoreis:
+            field_condition = {
+                "field": "meta.categories",
+                "operator": "in",
+                "value": filter_categoreis,
+            }
+            filters["conditions"].append(field_condition)
+
         loop = asyncio.get_event_loop()
         result = await loop.run_in_executor(
             None,
             self.hybrid_retrieval.run,
             {
-                "text_embedder": {"text": query},
-                "bm25_retriever": {"query": query},
+                "text_embedder": {
+                    "text": query,
+                },
+                "embedding_retriever": {
+                    "filters": filters,
+                },
+                "bm25_retriever": {
+                    "query": query,
+                    "filters": filters,
+                },
                 "ranker": {"query": query},
             },
         )

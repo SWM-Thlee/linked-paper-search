@@ -1,6 +1,6 @@
-from typing import List
+from typing import Annotated, List, Union
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Query, Request
 from haystack import Document
 from models.document import DocumentMeta, DocumentResponse
 
@@ -13,9 +13,18 @@ async def read_root():
 
 
 @router.get("/search", response_model=List[DocumentResponse])
-async def search(request: Request, query: str):
+async def search(
+    request: Request,
+    query: str,
+    filter_categories: Annotated[Union[list[str], None], Query()] = None,
+    filter_start_date: str = None,
+    filter_end_date: str = None,
+):
     results: List[DocumentResponse] = await request.app.state.search_service.query(
-        query
+        query,
+        filter_categories=filter_categories,
+        filter_start_date=filter_start_date,
+        filter_end_date=filter_end_date,
     )
 
     return results

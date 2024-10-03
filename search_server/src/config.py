@@ -44,7 +44,7 @@ async def lifespan(app: FastAPI):
             embedding_dim=embedding_dim,
             use_ssl=use_ssl,
         )
-        # device = ComponentDevice.from_str("mps:1")  # for local testing
+        device = ComponentDevice.from_str("mps")  # for local testing
 
     text_embedder = BgeM3SetenceEmbedder(device=device)
     ranker = BgeReRankderService(top_k=result_top_k, device=device)
