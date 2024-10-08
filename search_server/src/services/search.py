@@ -57,13 +57,28 @@ class SearchService:
         query: str,
         **kwargs,  # TODO: 검색 필터링 옵션 추가
     ) -> List[DocumentResponse]:
+        filter_categoreis = kwargs.get("filter_categories")
+        filter_start_date = kwargs.get("filter_start_date")
+        filter_end_date = kwargs.get("filter_end_date")
+
+        filters = self.get_filters(
+            filter_categoreis, filter_start_date, filter_end_date
+        )
         loop = asyncio.get_event_loop()
         result = await loop.run_in_executor(
             None,
             self.hybrid_retrieval.run,
             {
-                "text_embedder": {"text": query},
-                "bm25_retriever": {"query": query},
+                "text_embedder": {
+                    "text": query,
+                },
+                "embedding_retriever": {
+                    "filters": filters,
+                },
+                "bm25_retriever": {
+                    "query": query,
+                    "filters": filters,
+                },
                 "ranker": {"query": query},
             },
         )
@@ -76,7 +91,7 @@ class SearchService:
         return documents
 
     async def similar_docs(
-        self, doc_id: str, top_k: int = 10
+        self, doc_id: str, top_k: int = 10, **kwargs
     ) -> List[DocumentResponse]:
         try:
             doc_vector = self.vector_store.get(doc_id)
@@ -90,17 +105,51 @@ class SearchService:
             self.vector_store.set(doc_id, doc_vector)
 
         finally:
+            filter_categoreis = kwargs.get("filter_categories")
+            filter_start_date = kwargs.get("filter_start_date")
+            filter_end_date = kwargs.get("filter_end_date")
+            filters = self.get_filters(
+                filter_categoreis, filter_start_date, filter_end_date
+            )
             loop = asyncio.get_event_loop()
             result = await loop.run_in_executor(
                 None,  # 기본 스레드 풀 사용
                 self.embedding_retriever.run,
                 doc_vector,
-                None,
-                top_k,
+                filters,
+                top_k + 1,  # 자기 자신을 제외한 결과를 가져오기 위해 +1
             )
             results: List[Document] = result["documents"]
             documents = []
             for doc in results:
+                if doc.id == doc_id:
+                    continue
+                self.vector_store.set(doc.id, doc.embedding)
                 document = DocumentResponse(id=doc.id, meta=doc.meta, weight=doc.score)
                 documents.append(document)
             return documents
+
+    def get_filters(self, filter_categories, filter_start_date, filter_end_date):
+        filters = {"operator": "AND", "conditions": []}
+        if filter_start_date:
+            date_condition = {
+                "field": "meta.datestamp",
+                "operator": ">=",
+                "value": filter_start_date,
+            }
+            filters["conditions"].append(date_condition)
+        if filter_end_date:
+            date_condition = {
+                "field": "meta.datestamp",
+                "operator": "<=",
+                "value": filter_end_date,
+            }
+            filters["conditions"].append(date_condition)
+        if filter_categories:
+            field_condition = {
+                "field": "meta.categories",
+                "operator": "in",
+                "value": filter_categories,
+            }
+            filters["conditions"].append(field_condition)
+        return filters

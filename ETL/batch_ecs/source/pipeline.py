@@ -13,7 +13,7 @@ from requests.exceptions import HTTPError
 from .utils import aws_auth, opensearch_vpc_endpoint
 
 embedding_model = "BAAI/bge-m3"
-index = "new_index9"
+index = "new_paper_document_index"
 
 opensearch_endpoint = (
     opensearch_vpc_endpoint  # 같은 subnet에 있는 OpenSearch vpc 엔드포인트
