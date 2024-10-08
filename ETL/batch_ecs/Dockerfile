@@ -41,9 +41,5 @@ ENV KMP_AFFINITY="granularity=fine,compact,1,0"
 # Stage 1에서 모델 캐시 파일을 복사
 COPY --from=model-builder /model_cache /root/.cache/huggingface/hub
 
-ENV BGE_M3_MODEL_PATH=/app/models/bge-m3
-
-ENV BGE_M3_MODEL_PATH=/app/models/bge-m3
-
 # Run main.py when the container launches
 CMD ["python", "main.py"]
