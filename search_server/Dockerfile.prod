@@ -30,6 +30,9 @@ FROM python:3.9-slim
 
 WORKDIR /app
 
+# Stage 1에서 모델 캐시 파일을 복사
+COPY --from=model-builder /model_cache /root/.cache/huggingface/hub
+
 COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
@@ -37,9 +40,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY ./src ./src
 
 WORKDIR /app/src
-
-# Stage 1에서 모델 캐시 파일을 복사
-COPY --from=model-builder /model_cache /root/.cache/huggingface/hub
 
 EXPOSE 8000
 

@@ -31,9 +31,20 @@ async def search(
 
 
 @router.get("/correlations", response_model=List[DocumentResponse])
-async def get_cores(request: Request, doc_id: str):
+async def correlations(
+    request: Request,
+    doc_id: str,
+    filter_categories: Annotated[Union[list[str], None], Query()] = None,
+    filter_start_date: str = None,
+    filter_end_date: str = None,
+):
     results: List[DocumentResponse] = (
-        await request.app.state.search_service.similar_docs(doc_id)
+        await request.app.state.search_service.similar_docs(
+            doc_id,
+            filter_categories=filter_categories,
+            filter_start_date=filter_start_date,
+            filter_end_date=filter_end_date,
+        )
     )
 
     return results

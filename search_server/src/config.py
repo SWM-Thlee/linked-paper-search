@@ -10,7 +10,7 @@ from services.search import SearchService
 from utils.logger import logger
 
 result_top_k = 50  # ranking 이후 상위 몇개의 결과를 가져올지 결정
-index = "new_index9"
+index = "new_paper_document_index"
 timeout = 900
 use_ssl = True
 verify_certs = True
@@ -40,7 +40,6 @@ async def lifespan(app: FastAPI):
     else:
         # dev 환경에 맞춘 Document Store
         document_store = LocalOpenSearch(
-            index=index,
             embedding_dim=embedding_dim,
             use_ssl=use_ssl,
         )
