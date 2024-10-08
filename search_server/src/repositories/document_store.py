@@ -59,11 +59,9 @@ class AwsOpenSearch(OpenSearchDocumentStore):
         """
         credentials = boto3.Session().get_credentials()
         self.aws_auth = AWS4Auth(
-            credentials.access_key,
-            credentials.secret_key,
-            self.DEFAULT_REGION,
-            "es",
-            session_token=credentials.token,
+            region=self.DEFAULT_REGION,
+            service="es",
+            refreshable_credentials=credentials,
         )
         print(f"Updated AWS4Auth credentials: {self.aws_auth.date}")
 
@@ -82,7 +80,7 @@ class AwsOpenSearch(OpenSearchDocumentStore):
                 logger.warning(
                     "403 AuthorizationException: Refreshing AWS credentials."
                 )
-                self._client.close()
+                self._client = None  # auth 재설정을 위한 클라이언트 초기화
                 self.update_auth_credentials()
                 # 자격 증명 갱신 후 메서드 다시 실행
                 return super()._search_documents(*args, **kwargs)
