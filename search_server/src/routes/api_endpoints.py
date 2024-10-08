@@ -34,6 +34,7 @@ async def search(
 async def correlations(
     request: Request,
     doc_id: str,
+    limit: int = 10,
     filter_categories: Annotated[Union[list[str], None], Query()] = None,
     filter_start_date: str = None,
     filter_end_date: str = None,
@@ -41,6 +42,7 @@ async def correlations(
     results: List[DocumentResponse] = (
         await request.app.state.search_service.similar_docs(
             doc_id,
+            top_k=limit,
             filter_categories=filter_categories,
             filter_start_date=filter_start_date,
             filter_end_date=filter_end_date,

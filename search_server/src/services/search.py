@@ -117,7 +117,7 @@ class SearchService:
                 self.embedding_retriever.run,
                 doc_vector,
                 filters,
-                top_k,
+                top_k + 1,  # 자기 자신을 제외한 결과를 가져오기 위해 +1
             )
             results: List[Document] = result["documents"]
             documents = []
