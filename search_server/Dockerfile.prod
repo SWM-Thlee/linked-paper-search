@@ -35,7 +35,7 @@ COPY --from=model-builder /model_cache /root/.cache/huggingface/hub
 
 COPY requirements.txt .
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir  pip==23.0.1 &&  pip install --no-cache-dir -r requirements.txt
 
 COPY ./src ./src
 
@@ -47,5 +47,6 @@ ENV ENVIRONMENT=prod
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
 ENV CUDA_VISIBLE_DEVICES=0
-
+ARG SENTRY_DSN
+ENV SENTRY_DSN=$SENTRY_DSN
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
