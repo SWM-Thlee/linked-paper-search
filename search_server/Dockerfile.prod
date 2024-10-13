@@ -1,5 +1,5 @@
 # Stage 1: 모델을 미리 다운로드하여 캐시하는 빌더 이미지
-FROM python:3.9-slim AS model-builder
+FROM python:3.9.20-slim AS model-builder
 
 RUN pip install --no-cache-dir huggingface_hub[cli]==0.24.6
 
@@ -26,7 +26,7 @@ RUN huggingface-cli download BAAI/bge-m3 config_sentence_transformers.json --cac
 
 
 # Stage 2: 최종 런타임 이미지
-FROM python:3.9-slim
+FROM python:3.9.20-slim
 
 WORKDIR /app
 
@@ -35,7 +35,7 @@ COPY --from=model-builder /model_cache /root/.cache/huggingface/hub
 
 COPY requirements.txt .
 
-RUN pip install --no-cache-dir  pip==23.0.1 &&  pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir  pip==24.1 &&  pip install --no-cache-dir -r requirements.txt
 
 COPY ./src ./src
 

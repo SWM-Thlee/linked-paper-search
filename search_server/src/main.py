@@ -7,14 +7,19 @@ from routes.api_endpoints import router as main_router
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.starlette import StarletteIntegration
 
+
+def before_send(event, hint):
+    # 이벤트가 트랜잭션일 경우, 해당 트랜잭션의 요청 경로가 `/`이면 무시
+    if "transaction" in event:
+        request = event.get("request", {})
+        if request.get("url", "").endswith("/"):
+            return None  # 트랜잭션 무시
+    return event
+
+
 sentry_sdk.init(
     dsn=os.getenv("SENTRY_DSN"),
-    # Set traces_sample_rate to 1.0 to capture 100%
-    # of transactions for tracing.
     traces_sample_rate=1.0,
-    # Set profiles_sample_rate to 1.0 to profile 100%
-    # of sampled transactions.
-    # We recommend adjusting this value in production.
     profiles_sample_rate=1.0,
     integrations=[
         StarletteIntegration(
@@ -28,6 +33,7 @@ sentry_sdk.init(
             http_methods_to_capture=("GET",),
         ),
     ],
+    before_send=before_send,  # before_send 콜백 설정
 )
 app = FastAPI(lifespan=lifespan)
 
