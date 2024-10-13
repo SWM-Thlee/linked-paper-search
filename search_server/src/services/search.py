@@ -98,7 +98,14 @@ class SearchService:
 
         except ValueError as e:
             result = self.bm25_retriever.run(
-                query=doc_id, top_k=1, filters={"id": doc_id}
+                query=doc_id,
+                top_k=1,
+                filters={
+                    "operator": "AND",
+                    "conditions": [
+                        {"field": "id", "operator": "==", "value": doc_id},
+                    ],
+                },
             )
             results: List[Document] = result["documents"]
             doc_vector = results[0].embedding
