@@ -8,13 +8,15 @@ from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.starlette import StarletteIntegration
 
 
-def before_send(event, hint):
-    # 이벤트가 트랜잭션일 경우, 해당 트랜잭션의 요청 경로가 `/`이면 무시
-    if "transaction" in event:
-        request = event.get("request", {})
-        if request.get("url", "").endswith("/"):
-            return None  # 트랜잭션 무시
-    return event
+def traces_sampler(sampling_context):
+    # Extract the ASGI scope and then the path from it
+    asgi_scope = sampling_context.get("asgi_scope", {})
+    path = asgi_scope.get("path", "")  # Extracting the 'path'
+
+    # Ignore root URL ("/")
+    if path == "/":
+        return 0  # Drop transaction for the root path
+    return 1.0  # Default sample rate for other paths
 
 
 sentry_sdk.init(
@@ -33,7 +35,7 @@ sentry_sdk.init(
             http_methods_to_capture=("GET",),
         ),
     ],
-    before_send=before_send,  # before_send 콜백 설정
+    traces_sampler=traces_sampler,
 )
 app = FastAPI(lifespan=lifespan)
 
