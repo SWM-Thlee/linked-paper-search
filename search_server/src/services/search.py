@@ -124,13 +124,11 @@ class SearchService:
                 self.embedding_retriever.run,
                 doc_vector,
                 filters,
-                top_k + 1,  # 자기 자신을 제외한 결과를 가져오기 위해 +1
+                top_k,  # 자기 자신을 제외한 결과를 가져오기 위해 +1
             )
             results: List[Document] = result["documents"]
             documents = []
             for doc in results:
-                if doc.id == doc_id:
-                    continue
                 self.vector_store.set(doc.id, doc.embedding)
                 document = DocumentResponse(id=doc.id, meta=doc.meta, weight=doc.score)
                 documents.append(document)
