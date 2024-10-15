@@ -40,7 +40,7 @@ async def correlations(
     filter_end_date: str = None,
 ):
     results: List[DocumentResponse] = (
-        await request.app.state.search_service.similar_docs(
+        await request.app.state.correlation_service.similar_docs(
             doc_id,
             top_k=limit,
             filter_categories=filter_categories,
