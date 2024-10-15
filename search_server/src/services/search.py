@@ -118,17 +118,14 @@ class SearchService:
             filters = self.get_filters(
                 filter_categoreis, filter_start_date, filter_end_date
             )
-            loop = asyncio.get_event_loop()
-            result = await loop.run_in_executor(
-                None,  # 기본 스레드 풀 사용
-                self.embedding_retriever.run,
+            query_result = self.embedding_retriever.run(
                 doc_vector,
                 filters,
                 top_k,  # 자기 자신을 제외한 결과를 가져오기 위해 +1
             )
-            results: List[Document] = result["documents"]
+            similar_docs: List[Document] = query_result["documents"]
             documents = []
-            for doc in results:
+            for doc in similar_docs:
                 self.vector_store.set(doc.id, doc.embedding)
                 document = DocumentResponse(id=doc.id, meta=doc.meta, weight=doc.score)
                 documents.append(document)
