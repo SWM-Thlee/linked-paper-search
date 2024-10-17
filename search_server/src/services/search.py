@@ -9,7 +9,6 @@ from haystack_integrations.components.retrievers.opensearch import (
 )
 from models.document import DocumentResponse
 from repositories.document_store import OpenSearchDocumentStore
-from repositories.vector_store import InMemoryVectorStore, TempDocument
 from services.embedding import EmbeddingService
 from services.ranker import RankerService
 from utils.filter import get_filters

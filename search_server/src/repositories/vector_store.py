@@ -5,10 +5,10 @@ import numpy as np
 
 
 class TempDocument:
-    def __init__(self, id: str, embedding: np.ndarray, title: str):
+    def __init__(self, id: str, embedding: np.ndarray, content: str):
         self.id = id
         self.embedding = embedding
-        self.title = title
+        self.content = content
 
 
 # 벡터 스토어의 기본 인터페이스 정의

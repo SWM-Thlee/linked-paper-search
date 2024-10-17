@@ -19,7 +19,7 @@ def traces_sampler(sampling_context):
     return 1.0  # Default sample rate for other paths
 
 
-if os.getenv("PRODUCTION", "dev") == "prod":
+if os.getenv("ENVIRONMENT", "dev") == "prod":
     sentry_sdk.init(
         dsn=os.getenv("SENTRY_DSN"),
         traces_sample_rate=1.0,
