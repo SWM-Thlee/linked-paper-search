@@ -12,7 +12,7 @@ class DocumentMeta(BaseModel):
     categories: str
     comments: Optional[str]
     license: Optional[str]
-    submitter: str
+    submitter: Optional[str]
 
 
 class DocumentResponse(BaseModel):
