@@ -48,34 +48,43 @@ class SearchService:
 
         self.hybrid_retrieval.warm_up()  # lazy loading 방지 (model download, db connection ...)
 
+    def _truncate_query(self, query: str, max_length: int = 60) -> str:
+        if len(query) <= max_length:
+            return query
+        # 최대 길이 내에서 띄어쓰기 기준으로 자르기
+        truncated_query = query[:max_length].rsplit(" ", 1)[0]
+        return truncated_query
+
     async def query(
         self,
-        query: str,
-        **kwargs,  # TODO: 검색 필터링 옵션 추가
+        query_sentence: str,
+        **kwargs,
     ) -> List[DocumentResponse]:
         filter_categoreis = kwargs.get("filter_categories")
         filter_start_date = kwargs.get("filter_start_date")
         filter_end_date = kwargs.get("filter_end_date")
 
         filters = get_filters(filter_categoreis, filter_start_date, filter_end_date)
-        loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(
-            None,
-            self.hybrid_retrieval.run,
+
+        # query_sentence = self._truncate_query(query_sentence)
+
+        # loop = asyncio.get_event_loop()
+        result = self.hybrid_retrieval.run(
             {
                 "text_embedder": {
-                    "text": query,
+                    "text": query_sentence,
                 },
                 "embedding_retriever": {
                     "filters": filters,
                 },
                 "bm25_retriever": {
-                    "query": query,
+                    "query": query_sentence,
                     "filters": filters,
                 },
-                "ranker": {"query": query},
-            },
+                "ranker": {"query": query_sentence},
+            }
         )
+
         results: List[Document] = result["ranker"]["documents"]
         documents = []
         for doc in results:
