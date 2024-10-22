@@ -1,15 +1,14 @@
-name: 'LLM Code Review Action'
+name: "LLM Code Review Action"
 
 on:
-  pull_request:
-    types: [opened]
+  workflow_dispatch:
 
 permissions:
   contents: read # 콘텐츠 접근 권한 (리포지토리 파일 읽기)
   pull-requests: write
 
 jobs:
-  test-action:
+  llm-code-review:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -25,6 +24,6 @@ jobs:
           pr_title: ${{ github.event.pull_request.title }}
           pr_body: ${{ github.event.pull_request.body }}
           ollama_api_url: ${{ secrets.OLLAMA_API_URL }}
-          ollama_model: 'llama3.1:8b'
-          prompt_type: 'GENERAL_REVIEW'
-          prompt_language: 'KR'
+          ollama_model: "llama3.1:8b"
+          prompt_type: "GENERAL_REVIEW"
+          prompt_language: "KR"
