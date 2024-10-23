@@ -19,24 +19,25 @@ def traces_sampler(sampling_context):
     return 1.0  # Default sample rate for other paths
 
 
-sentry_sdk.init(
-    dsn=os.getenv("SENTRY_DSN"),
-    traces_sample_rate=1.0,
-    profiles_sample_rate=1.0,
-    integrations=[
-        StarletteIntegration(
-            transaction_style="endpoint",
-            failed_request_status_codes={403, *range(500, 599)},
-            http_methods_to_capture=("GET",),
-        ),
-        FastApiIntegration(
-            transaction_style="endpoint",
-            failed_request_status_codes={403, *range(500, 599)},
-            http_methods_to_capture=("GET",),
-        ),
-    ],
-    traces_sampler=traces_sampler,
-)
+if os.getenv("ENVIRONMENT", "dev") == "prod":
+    sentry_sdk.init(
+        dsn=os.getenv("SENTRY_DSN"),
+        traces_sample_rate=1.0,
+        profiles_sample_rate=1.0,
+        integrations=[
+            StarletteIntegration(
+                transaction_style="endpoint",
+                failed_request_status_codes={403, *range(500, 599)},
+                http_methods_to_capture=("GET",),
+            ),
+            FastApiIntegration(
+                transaction_style="endpoint",
+                failed_request_status_codes={403, *range(500, 599)},
+                http_methods_to_capture=("GET",),
+            ),
+        ],
+        traces_sampler=traces_sampler,
+    )
 app = FastAPI(lifespan=lifespan)
 
 # 라우트 추가
