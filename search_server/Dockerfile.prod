@@ -35,7 +35,7 @@ COPY --from=model-builder /model_cache /root/.cache/huggingface/hub
 
 COPY requirements.txt .
 
-RUN pip install --no-cache-dir  pip==24.1 &&  pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir  pip==24.2 &&  pip install --no-cache-dir -r requirements.txt
 
 COPY ./src ./src
 

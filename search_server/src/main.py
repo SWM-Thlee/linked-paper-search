@@ -16,7 +16,7 @@ def traces_sampler(sampling_context):
     # Ignore root URL ("/")
     if path == "/":
         return 0  # Drop transaction for the root path
-    return 1.0  # Default sample rate for other paths
+    return 0.2  # Default sample rate for other paths
 
 
 if os.getenv("ENVIRONMENT", "dev") == "prod":
