@@ -10,7 +10,7 @@ from haystack_integrations.components.retrievers.opensearch import (
 from models.document import DocumentResponse
 from repositories.document_store import OpenSearchDocumentStore
 from services.embedding import EmbeddingService
-from services.ranker import RankerService
+from services.ranker import Ranker
 from utils.filter import get_filters
 from utils.logger import log_on_init
 
@@ -20,7 +20,7 @@ class SearchService:
     def __init__(
         self,
         document_store: OpenSearchDocumentStore,
-        ranker: RankerService,
+        ranker: Ranker,
         text_embedder: EmbeddingService,
         top_k=10,
     ):

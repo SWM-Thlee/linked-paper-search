@@ -9,7 +9,7 @@ from haystack_integrations.components.retrievers.opensearch import (
 from models.document import DocumentResponse
 from repositories.document_store import OpenSearchDocumentStore
 from repositories.vector_store import InMemoryVectorStore, TempDocument
-from services.ranker import RankerService
+from services.ranker import Ranker
 from utils.filter import get_filters
 from utils.logger import log_on_init
 
@@ -19,7 +19,7 @@ class CorrelationService:
     def __init__(
         self,
         document_store: OpenSearchDocumentStore,
-        ranker: RankerService,
+        ranker: Ranker,
         top_k=10,
         vector_store: InMemoryVectorStore = None,
     ):

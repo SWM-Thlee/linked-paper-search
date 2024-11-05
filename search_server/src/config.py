@@ -7,7 +7,7 @@ from repositories.document_store import AwsOpenSearch, LocalOpenSearch
 from repositories.vector_store import InMemoryVectorStore
 from services.correlations import CorrelationService
 from services.embedding import BgeM3SetenceEmbedder
-from services.ranker import BgeReRankderService
+from services.ranker import BgeReRankder
 from services.search import SearchService
 from utils.logger import logger
 
@@ -49,14 +49,14 @@ async def lifespan(app: FastAPI):
 
     vector_store = InMemoryVectorStore()
     text_embedder = BgeM3SetenceEmbedder(device=device)
-    ranker = BgeReRankderService(top_k=result_top_k, device=device)
+    ranker = BgeReRankder(top_k=result_top_k, device=device)
     app.state.search_service = SearchService(
         text_embedder=text_embedder,
         document_store=document_store,
         ranker=ranker,
         top_k=result_top_k // 2,  # 각각의 retriever에서 가져올 결과의 개수
     )
-    similiar_ranker = BgeReRankderService(top_k=10, device=device)
+    similiar_ranker = BgeReRankder(top_k=10, device=device)
     app.state.correlation_service = CorrelationService(
         document_store=document_store,
         ranker=similiar_ranker,
