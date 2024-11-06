@@ -1,11 +1,8 @@
 import os
 
-import sentry_sdk
 from config import lifespan
 from fastapi import FastAPI
 from routes.api_endpoints import router as main_router
-from sentry_sdk.integrations.fastapi import FastApiIntegration
-from sentry_sdk.integrations.starlette import StarletteIntegration
 
 
 def traces_sampler(sampling_context):
@@ -20,6 +17,10 @@ def traces_sampler(sampling_context):
 
 
 if os.getenv("ENVIRONMENT", "dev") == "prod":
+    import sentry_sdk
+    from sentry_sdk.integrations.fastapi import FastApiIntegration
+    from sentry_sdk.integrations.starlette import StarletteIntegration
+
     sentry_sdk.init(
         dsn=os.getenv("SENTRY_DSN"),
         traces_sample_rate=1.0,

@@ -1,0 +1,10 @@
+# for non cuda environment
+sentence-transformers==3.2.1
+accelerate==0.33.0
+opensearch-haystack==1.0.0
+haystack-ai==2.6.1
+fastapi==0.112.2
+uvicorn==0.30.6
+boto3==1.35.11
+botocore==1.35.30
+requests-aws4auth==1.3.1
