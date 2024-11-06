@@ -48,7 +48,7 @@ class SearchService:
 
         self.hybrid_retrieval.warm_up()  # lazy loading 방지 (model download, db connection ...)
 
-    def _truncate_query(self, query: str, max_length: int = 60) -> str:
+    def _truncate_query(self, query: str, max_length: int = 150) -> str:
         if len(query) <= max_length:
             return query
         # 최대 길이 내에서 띄어쓰기 기준으로 자르기
@@ -66,7 +66,7 @@ class SearchService:
 
         filters = get_filters(filter_categoreis, filter_start_date, filter_end_date)
 
-        # query_sentence = self._truncate_query(query_sentence)
+        truncated_query = self._truncate_query(query_sentence)
 
         # loop = asyncio.get_event_loop()
         result = self.hybrid_retrieval.run(
@@ -78,7 +78,7 @@ class SearchService:
                     "filters": filters,
                 },
                 "bm25_retriever": {
-                    "query": query_sentence,
+                    "query": truncated_query,
                     "filters": filters,
                 },
                 "ranker": {"query": query_sentence},
