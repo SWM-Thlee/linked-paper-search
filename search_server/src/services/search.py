@@ -48,7 +48,7 @@ class SearchService:
 
         self.hybrid_retrieval.warm_up()  # lazy loading 방지 (model download, db connection ...)
 
-    def _truncate_query(self, query: str, max_length: int = 150) -> str:
+    def _truncate_query(self, query: str, max_length: int = 120) -> str:
         if len(query) <= max_length:
             return query
         # 최대 길이 내에서 띄어쓰기 기준으로 자르기
